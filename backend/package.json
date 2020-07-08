@@ -1,0 +1,23 @@
+{
+  "name": "timesheet-backend",
+  "version": "1.0.0",
+  "description": "timesheet control api",
+  "main": "./src/server.js",
+  "scripts": {
+    "test": "cross-env NODE_ENV=test jest",
+    "start": "cross-env NODE_ENV=production node ./src/server.js",
+    "dev": "cross-env NODE_ENV=development nodemon ./src/server.js"
+  },
+  "keywords": ["timesheet"],
+  "author": "maiquelp",
+  "license": "MIT",
+  "dependencies": {
+    "cross-env": "^7.0.2",
+    "express": "^4.17.1",
+    "knex": "^0.21.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4",
+    "sqlite3": "^5.0.0"
+  }
+}
