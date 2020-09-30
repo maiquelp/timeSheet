@@ -6,8 +6,12 @@ const routes = express.Router();
 
 routes.post('/task', taskController.create);
 
-routes.get('/taskTotal', taskController.indexTotal);
+routes.get('/latestTask', taskController.indexLatestTask);
 
-routes.get('/taskLatest', taskController.indexLatest);
+routes.delete('/deleteTask', taskController.deleteTask);
+
+routes.get('/weekTasks', taskController.indexWeekTasks);
+
+routes.get('/weekMinutes', taskController.indexWeekMinutes);
 
 module.exports = routes;
