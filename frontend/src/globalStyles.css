@@ -1,0 +1,46 @@
+:root {
+    /* font-size: 60%; */
+    /* default size = 16px * 0,6 = 9,6px */
+
+    --color-white: #FFFFFF;
+    --color-primary: #6C63FF;
+    --color-main-background: #DDE1EC;
+    --color-gray: #6A6180;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body, #root {
+    height: 100vh;
+}
+
+body {
+    background: var(--color-white);
+}
+
+#root {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body, input, button {
+    font: 600 16px Archivo; 
+    /* 1,6rem * 9,6px = 15,36px*/
+    color: var(--color-primary);
+}
+
+h1 {
+  color: var(--color-gray);
+}
+
+.container {
+    width: 90vw;
+    max-width: 962px;
+    border-color: #6A6180;
+}
+
