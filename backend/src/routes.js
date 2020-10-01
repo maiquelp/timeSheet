@@ -14,4 +14,10 @@ routes.get('/weekTasks', taskController.indexWeekTasks);
 
 routes.get('/weekMinutes', taskController.indexWeekMinutes);
 
+routes.get('/weekReals', taskController.indexWeekReals);
+
+routes.get('/week', taskController.indexWeek);
+
+routes.get('/month', taskController.indexMonth);
+
 module.exports = routes;

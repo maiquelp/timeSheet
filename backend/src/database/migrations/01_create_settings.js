@@ -1,6 +1,6 @@
 exports.up = knex => {
     return knex.schema.createTable('settings', table => {
-        table.decimal('dolar');
+        table.decimal('dollar');
         table.decimal('cost');
     })
 };
