@@ -6,15 +6,9 @@ const routes = express.Router();
 
 routes.post('/task', taskController.create);
 
-routes.get('/latestTask', taskController.indexLatestTask);
+routes.get('/lastTask', taskController.indexLast);
 
-routes.delete('/deleteTask', taskController.deleteTask);
-
-routes.get('/weekTasks', taskController.indexWeekTasks);
-
-routes.get('/weekMinutes', taskController.indexWeekMinutes);
-
-routes.get('/weekReals', taskController.indexWeekReals);
+routes.delete('/deleteTask', taskController.delete);
 
 routes.get('/week', taskController.indexWeek);
 

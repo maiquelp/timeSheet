@@ -25,8 +25,6 @@ const getMonthDays = (month) => {
   const firstDay = new Date(y, m, 1);
   const lastDay = new Date(y, m + 1, 1);
 
-  console.log(formatDate(firstDay) + " " + formatDate(lastDay));
-
   return [formatDate(firstDay), formatDate(lastDay)];
 }
 
@@ -45,8 +43,7 @@ module.exports = {
         }
     },
 
-    async indexLatestTask(req, res) {
-      //const {from, to} = req.body;
+    async indexLast(req, res) {
       
       try {
         const taskLatest = await connection('task').select('time', 'submit').limit(1).orderBy('id', 'desc');
@@ -58,7 +55,7 @@ module.exports = {
       }
     },
     
-    async deleteTask(req,res) {
+    async delete(req,res) {
       try {
         
           const subQuery = connection('task').select('id').limit(1).orderBy('id', 'desc');
@@ -70,45 +67,6 @@ module.exports = {
         } catch (err) {
           return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
         }
-    },
-
-    async indexWeekMinutes(req, res) {    
-        try {
-            const [weekMinutes] = await connection('task').sum('time as minutes').whereBetween('submit', getWeekDays(7));
-
-            return res.json(weekMinutes.minutes);
-
-        } catch (err) {
-            return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
-        }
-    },
-
-    async indexWeekTasks(req, res) {
-      try {
-          const [weekTasks] = await connection('task').count('id as tasks').whereBetween('submit', getWeekDays(7));
-         
-          return res.json(weekTasks.tasks);
-
-      } catch (err) {
-          return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
-      }
-    },
-
-    async indexWeekReals(req, res) {
-      try {
-        const [cost] = await connection('settings').select('cost');
-
-        const [dollar] = await connection('settings').select('dollar');
-
-        const [weekMinutes] = await connection('task').sum('time as minutes').whereBetween('submit', getWeekDays(7));
-
-        const reals = weekMinutes.minutes / 60 * cost.cost * dollar.dollar;
-
-        return res.json(reals);
-
-      } catch (err) {
-        return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
-      }
     },
 
     async indexWeek(req, res) {

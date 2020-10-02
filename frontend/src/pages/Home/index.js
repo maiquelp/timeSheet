@@ -1,30 +1,99 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 
 import api from '../../services/api';
 
-import { Main, Section, SectionHeader, SectionMain, Form, FormInput, Input} from './styles';
+import { Main, Section, SectionHeader, SectionMain, Form, FormInput, Input, InputLast} from './styles';
 
 import Header from '../../components/Header';
 import Button from '../../components/Button';
 
 const Home = () => {
 
-    const [time, setTime] = useState();
-    const [exp_time, setExp_time] = useState();
+    const [time, setTime] = useState(1);
+    const [lastTask, setLastTask] = useState();
+    const [weekTasks, setWeekTasks] = useState();
+    const [weekMinutes, setWeekMinutes] = useState();
+    const [weekReals, setWeekReals] = useState();
+    const [lastWeekTasks, setLastWeekTasks] = useState();
+    const [lastWeekMinutes, setLastWeekMinutes] = useState();
+    const [monthTasks, setMonthTasks] = useState();
+    const [monthMinutes, setMonthMinutes] = useState();
+    const [monthReals, setMonthReals] = useState();
+    const [lastMonthTasks, setLastMonthTasks] = useState();
+    const [lastMonthMinutes, setLastMonthMinutes] = useState();
+
+    useEffect( () => {
+      getLastTask();
+      getWeekTasks();
+      getMonthTasks();
+    }, []);
 
     const taskSubmit = async (e) => {
         e.preventDefault();
 
-        const data = { time, exp_time }
+        const data = { time }
 
         try {
             await api.post('task', data);
-            alert('cadastrado');
-
+            getLastTask();
+            getWeekTasks();
+            getMonthTasks();      
+            alert('Recorded!');
         } catch (err) {
-            alert(`Erro ao cadastrar, tente novamente. \n Original Message:\n ${err}`);
+            alert(`Error on submit. \n Original Message:\n ${err}`);
         }
-    }
+    };
+
+    const getLastTask = async () => {
+        try {
+            const res = await api.get('lastTask');
+            const last = `${res.data[0].time} minutes in ${res.data[0].submit}`;
+            setLastTask(last);
+        } catch (err) {
+            alert(`Error on get the last task. \n Original Message:\n ${err}`);
+        }
+    };
+
+    const undoTask = async (e) => {
+      e.preventDefault();  
+      try {
+          await api.delete('deleteTask');
+          getLastTask();
+          getWeekTasks();
+          getMonthTasks();    
+          alert('Deleted!');
+        } catch (err) {
+          alert(`Error on deleting last task. \n Original Message:\n ${err}`);
+        }
+    };
+
+    const getWeekTasks = async () => {
+      try {
+          const res = await api.get('week');
+          setWeekTasks(res.data[0].tasks);
+          setWeekMinutes(res.data[1].minutes);
+          setWeekReals(res.data[2].reals);
+          setLastWeekTasks(res.data[3].lastTasks);
+          setLastWeekMinutes(res.data[4].lastMinutes);
+      } catch (err) {
+          alert(`Error on get the week results. \n Original Message:\n ${err}`);
+      }
+    };
+
+    const getMonthTasks = async () => {
+      try {
+          const res = await api.get('month');
+          setMonthTasks(res.data[0].tasks);
+          setMonthMinutes(res.data[1].minutes);
+          setMonthReals(res.data[2].reals);
+          setLastMonthTasks(res.data[3].lastTasks);
+          setLastMonthMinutes(res.data[4].lastMinutes);
+      } catch (err) {
+          alert(`Error on get the week results. \n Original Message:\n ${err}`);
+      }
+    };
+
+
 
     return (
         <div className="container">
@@ -39,14 +108,15 @@ const Home = () => {
                         <Form onSubmit={taskSubmit}>
                             <FormInput>
                                 <label>Task<br/> Minutes</label>
-                                <Input onChange={ e => setTime(e.target.value)} placeholder="0" type="number" min="0.5" step="0.5" required autoFocus />
+                                <Input onChange={ e => setTime(e.target.value)} placeholder="1" type="number" 
+                                    min="0.5" step="0.5" value={time} autoFocus />
                             </FormInput>
                             <Button text="Add" type="submit" />
                         </Form>
-                        <Form>
+                        <Form onSubmit={undoTask}>
                             <FormInput>
                                 <label>Last<br/> Addition</label>
-                                <Input type="text" />
+                                <InputLast type="text" value={lastTask} readonly/>
                             </FormInput>    
                             <Button text="Undo" type="submit" />
                         </Form>
@@ -62,25 +132,25 @@ const Home = () => {
                         <Form>
                             <FormInput>
                                 <label>Tasks</label>
-                                <Input onChange={ e => setTime(e.target.value)} placeholder="0" type="text" min="0.1" step="0.1" required autoFocus />
+                                <Input type="text" value={weekTasks} readonly />
                             </FormInput>
                             <FormInput>  
                                 <label>Minutes</label>
-                                <Input onChange={ e => setTime(e.target.value)} placeholder="0" type="text" min="0.1" step="0.1" required autoFocus />
+                                <Input type="text" value={weekMinutes} readonly />
                             </FormInput>
                             <FormInput>
                                 <label>R$</label>
-                                <Input onChange={ e => setTime(e.target.value)} placeholder="0" type="text" min="0.1" step="0.1" required autoFocus />
+                                <Input type="text" value={weekReals} readonly />
                             </FormInput>
                         </Form>
                         <Form>
                             <FormInput>
                                 <label>Last Week<br/> Tasks</label>
-                                <Input onChange={ e => setTime(e.target.value)} placeholder="0" type="text" min="0.1" step="0.1" required autoFocus />
+                                <Input type="text" value={lastWeekTasks} readonly />
                             </FormInput>
                             <FormInput>    
                                 <label>Last Week<br/> Minutes</label>
-                                <Input onChange={ e => setTime(e.target.value)} placeholder="0" type="text" min="0.1" step="0.1" required autoFocus />
+                                <Input type="text" value={lastWeekMinutes} readonly />
                             </FormInput>
                         </Form>
                     </SectionMain>
@@ -95,25 +165,25 @@ const Home = () => {
                         <Form>
                             <FormInput>
                                 <label>Tasks</label>
-                                <Input onChange={ e => setTime(e.target.value)} placeholder="0" type="text" min="0.1" step="0.1" required autoFocus />
+                                <Input type="text" value={monthTasks} readonly />
                             </FormInput>
                             <FormInput>  
                                 <label>Minutes</label>
-                                <Input onChange={ e => setTime(e.target.value)} placeholder="0" type="text" min="0.1" step="0.1" required autoFocus />
+                                <Input type="text" value={monthMinutes} readonly />
                             </FormInput>
                             <FormInput>
                                 <label>R$</label>
-                                <Input onChange={ e => setTime(e.target.value)} placeholder="0" type="text" min="0.1" step="0.1" required autoFocus />
+                                <Input type="text" value={monthReals} readonly />
                             </FormInput>
                         </Form>
                         <Form>
                             <FormInput>
                                 <label>Last Month<br/> Tasks</label>
-                                <Input onChange={ e => setTime(e.target.value)} placeholder="0" type="text" min="0.1" step="0.1" required autoFocus />
+                                <Input type="text" value={lastMonthTasks} readonly />
                             </FormInput>
                             <FormInput>    
                                 <label>Last Month<br/> Minutes</label>
-                                <Input onChange={ e => setTime(e.target.value)} placeholder="0" type="text" min="0.1" step="0.1" required autoFocus />
+                                <Input type="text" value={lastMonthMinutes} readonly />
                             </FormInput>
                         </Form>
                     </SectionMain>

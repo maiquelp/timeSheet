@@ -14,9 +14,12 @@ export const ButtonStyle = styled.button`
   margin-left: 15px;
   padding: 10px;
 	transition: opacity .3s;
-  &:hover,
-  &:focus {
+  &:hover {
     opacity: .75;
+  };
+  &:focus {
+    outline: none !important;
+    box-shadow: 0 0 3px var(--color-gray);
   }
 `;
 
