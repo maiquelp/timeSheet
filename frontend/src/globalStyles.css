@@ -41,6 +41,6 @@ h1 {
 .container {
     width: 90vw;
     max-width: 962px;
-    border-color: #6A6180;
+    margin-top: 10px;
 }
 

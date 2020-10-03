@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 
 import api from '../../services/api';
 
-import { Main, Section, SectionHeader, SectionMain, Form, FormInput, Input, InputLast} from './styles';
+import { Main, Section, SectionHeader, SectionMain, Form, FormInput, Input, InputLast, Hr} from './styles';
 
 import Header from '../../components/Header';
 import Button from '../../components/Button';
@@ -72,7 +72,7 @@ const Home = () => {
           const res = await api.get('week');
           setWeekTasks(res.data[0].tasks);
           setWeekMinutes(res.data[1].minutes);
-          setWeekReals(res.data[2].reals);
+          setWeekReals(parseFloat(res.data[2].reals).toFixed(2));
           setLastWeekTasks(res.data[3].lastTasks);
           setLastWeekMinutes(res.data[4].lastMinutes);
       } catch (err) {
@@ -85,7 +85,7 @@ const Home = () => {
           const res = await api.get('month');
           setMonthTasks(res.data[0].tasks);
           setMonthMinutes(res.data[1].minutes);
-          setMonthReals(res.data[2].reals);
+          setMonthReals(parseFloat(res.data[2].reals).toFixed(2));
           setLastMonthTasks(res.data[3].lastTasks);
           setLastMonthMinutes(res.data[4].lastMinutes);
       } catch (err) {
@@ -102,7 +102,7 @@ const Home = () => {
                 <Section>
                     <SectionHeader>
                       <h1>Task</h1>
-                      <hr/>
+                      <Hr/>
                     </SectionHeader>
                     <SectionMain>
                         <Form onSubmit={taskSubmit}>
@@ -126,7 +126,7 @@ const Home = () => {
                 <Section>
                     <SectionHeader>
                       <h1>Week Results</h1>
-                      <hr/>
+                      <Hr/>
                     </SectionHeader>
                     <SectionMain>
                         <Form>
@@ -159,7 +159,7 @@ const Home = () => {
                 <Section>
                     <SectionHeader>
                       <h1>Month Results</h1>
-                      <hr/>
+                      <Hr/>
                     </SectionHeader>
                     <SectionMain>
                         <Form>

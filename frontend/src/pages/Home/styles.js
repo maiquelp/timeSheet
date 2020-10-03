@@ -54,6 +54,10 @@ export const Input = styled.input`
   }
 `;
 
+export const Hr = styled.hr`
+  border-top: 1px solid var(--color-gray);
+`;
+
 export const InputLast = styled(Input)`
   width: 280px;
 `;
