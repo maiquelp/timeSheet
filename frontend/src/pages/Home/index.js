@@ -10,17 +10,17 @@ import Button from '../../components/Button';
 const Home = () => {
 
     const [time, setTime] = useState(1);
-    const [lastTask, setLastTask] = useState();
-    const [weekTasks, setWeekTasks] = useState();
-    const [weekMinutes, setWeekMinutes] = useState();
-    const [weekReals, setWeekReals] = useState();
-    const [lastWeekTasks, setLastWeekTasks] = useState();
-    const [lastWeekMinutes, setLastWeekMinutes] = useState();
-    const [monthTasks, setMonthTasks] = useState();
-    const [monthMinutes, setMonthMinutes] = useState();
-    const [monthReals, setMonthReals] = useState();
-    const [lastMonthTasks, setLastMonthTasks] = useState();
-    const [lastMonthMinutes, setLastMonthMinutes] = useState();
+    const [lastTask, setLastTask] = useState('');
+    const [weekTasks, setWeekTasks] = useState('');
+    const [weekMinutes, setWeekMinutes] = useState('');
+    const [weekReals, setWeekReals] = useState('');
+    const [lastWeekTasks, setLastWeekTasks] = useState('');
+    const [lastWeekMinutes, setLastWeekMinutes] = useState('');
+    const [monthTasks, setMonthTasks] = useState('');
+    const [monthMinutes, setMonthMinutes] = useState('');
+    const [monthReals, setMonthReals] = useState('');
+    const [lastMonthTasks, setLastMonthTasks] = useState('');
+    const [lastMonthMinutes, setLastMonthMinutes] = useState('');
 
     useEffect( () => {
       getLastTask();
@@ -116,7 +116,7 @@ const Home = () => {
                         <Form onSubmit={undoTask}>
                             <FormInput>
                                 <label>Last<br/> Addition</label>
-                                <InputLast type="text" value={lastTask} readonly/>
+                                <InputLast type="text" value={lastTask} readOnly/>
                             </FormInput>    
                             <Button text="Undo" type="submit" />
                         </Form>
@@ -132,25 +132,25 @@ const Home = () => {
                         <Form>
                             <FormInput>
                                 <label>Tasks</label>
-                                <Input type="text" value={weekTasks} readonly />
+                                <Input type="text" value={weekTasks} readOnly />
                             </FormInput>
                             <FormInput>  
                                 <label>Minutes</label>
-                                <Input type="text" value={weekMinutes} readonly />
+                                <Input type="text" value={weekMinutes} readOnly />
                             </FormInput>
                             <FormInput>
                                 <label>R$</label>
-                                <Input type="text" value={weekReals} readonly />
+                                <Input type="text" value={weekReals} readOnly />
                             </FormInput>
                         </Form>
                         <Form>
                             <FormInput>
                                 <label>Last Week<br/> Tasks</label>
-                                <Input type="text" value={lastWeekTasks} readonly />
+                                <Input type="text" value={lastWeekTasks} readOnly />
                             </FormInput>
                             <FormInput>    
                                 <label>Last Week<br/> Minutes</label>
-                                <Input type="text" value={lastWeekMinutes} readonly />
+                                <Input type="text" value={lastWeekMinutes} readOnly />
                             </FormInput>
                         </Form>
                     </SectionMain>
@@ -165,25 +165,25 @@ const Home = () => {
                         <Form>
                             <FormInput>
                                 <label>Tasks</label>
-                                <Input type="text" value={monthTasks} readonly />
+                                <Input type="text" value={monthTasks} readOnly />
                             </FormInput>
                             <FormInput>  
                                 <label>Minutes</label>
-                                <Input type="text" value={monthMinutes} readonly />
+                                <Input type="text" value={monthMinutes} readOnly />
                             </FormInput>
                             <FormInput>
                                 <label>R$</label>
-                                <Input type="text" value={monthReals} readonly />
+                                <Input type="text" value={monthReals} readOnly />
                             </FormInput>
                         </Form>
                         <Form>
                             <FormInput>
                                 <label>Last Month<br/> Tasks</label>
-                                <Input type="text" value={lastMonthTasks} readonly />
+                                <Input type="text" value={lastMonthTasks} readOnly />
                             </FormInput>
                             <FormInput>    
                                 <label>Last Month<br/> Minutes</label>
-                                <Input type="text" value={lastMonthMinutes} readonly />
+                                <Input type="text" value={lastMonthMinutes} readOnly />
                             </FormInput>
                         </Form>
                     </SectionMain>
