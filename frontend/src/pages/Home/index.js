@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 
 import api from '../../services/api';
 
-import { Main, Section, SectionHeader, SectionMain, Form, FormInput, Input, InputLast, Hr} from './styles';
+import { Main, Section, SectionHeader, SectionMain, Form, FormInput, Input, InputLast, Hr, InputDate} from './styles';
 
 import Header from '../../components/Header';
 import Button from '../../components/Button';
@@ -13,14 +13,22 @@ const Home = () => {
     const [lastTask, setLastTask] = useState('');
     const [weekTasks, setWeekTasks] = useState('');
     const [weekMinutes, setWeekMinutes] = useState('');
+    const [weekDollars, setWeekDollars] = useState('');
     const [weekReals, setWeekReals] = useState('');
     const [lastWeekTasks, setLastWeekTasks] = useState('');
     const [lastWeekMinutes, setLastWeekMinutes] = useState('');
     const [monthTasks, setMonthTasks] = useState('');
     const [monthMinutes, setMonthMinutes] = useState('');
+    const [monthDollars, setMonthDollars] = useState('');
     const [monthReals, setMonthReals] = useState('');
     const [lastMonthTasks, setLastMonthTasks] = useState('');
     const [lastMonthMinutes, setLastMonthMinutes] = useState('');
+    const [from, setFrom] = useState('');
+    const [to, setTo] = useState('');
+    const [customTasks, setCustomTasks] = useState('');
+    const [customMinutes, setCustomMinutes] = useState('');
+    const [customDollars, setCustomDollars] = useState('');
+    const [customReals, setCustomReals] = useState('');
 
     useEffect( () => {
       getLastTask();
@@ -72,9 +80,10 @@ const Home = () => {
           const res = await api.get('week');
           setWeekTasks(res.data[0].tasks);
           setWeekMinutes(res.data[1].minutes);
-          setWeekReals(parseFloat(res.data[2].reals).toFixed(2));
-          setLastWeekTasks(res.data[3].lastTasks);
-          setLastWeekMinutes(res.data[4].lastMinutes);
+          setWeekDollars(parseFloat(res.data[2].dollars).toFixed(2));
+          setWeekReals(parseFloat(res.data[3].reals).toFixed(2));
+          setLastWeekTasks(res.data[4].lastTasks);
+          setLastWeekMinutes(res.data[5].lastMinutes);
       } catch (err) {
           alert(`Error on get the week results. \n Original Message:\n ${err}`);
       }
@@ -85,15 +94,42 @@ const Home = () => {
           const res = await api.get('month');
           setMonthTasks(res.data[0].tasks);
           setMonthMinutes(res.data[1].minutes);
-          setMonthReals(parseFloat(res.data[2].reals).toFixed(2));
-          setLastMonthTasks(res.data[3].lastTasks);
-          setLastMonthMinutes(res.data[4].lastMinutes);
+          setMonthDollars(parseFloat(res.data[2].dollars).toFixed(2));
+          setMonthReals(parseFloat(res.data[3].reals).toFixed(2));
+          setLastMonthTasks(res.data[4].lastTasks);
+          setLastMonthMinutes(res.data[5].lastMinutes);
       } catch (err) {
-          alert(`Error on get the week results. \n Original Message:\n ${err}`);
+          alert(`Error on get the month results. \n Original Message:\n ${err}`);
       }
     };
 
+    const handleFilter = async (e) => {
+      e.preventDefault();  
 
+      try {
+        const res = await api.get('interval', {
+            params: {
+                from : from,
+                to : to
+            }
+        });
+        setCustomTasks(res.data[0].tasks);
+        setCustomMinutes(res.data[1].minutes);
+        setCustomDollars(parseFloat(res.data[2].dollars).toFixed(2));
+        setCustomReals(parseFloat(res.data[3].reals).toFixed(2));
+      } catch (err) {
+        alert(`Error on fetching data. \n Original Message:\n ${err}`);
+      }
+    };
+
+    // function formatDate(date) {
+    //     const d = date.getDate();
+    //     const m = date.getMonth() + 1; //Month from 0 to 11
+    //     const y = date.getFullYear();
+      
+    //     return '' + y + '-' + (m<=9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d);
+    //   }
+      
 
     return (
         <div className="container">
@@ -108,8 +144,8 @@ const Home = () => {
                         <Form onSubmit={taskSubmit}>
                             <FormInput>
                                 <label>Task<br/> Minutes</label>
-                                <Input onChange={ e => setTime(e.target.value)} placeholder="1" type="number" 
-                                    min="0.5" step="0.5" value={time} autoFocus />
+                                <Input onChange={ e => setTime(e.target.value)} type="number" 
+                                    min="0.5" step="0.5" value={time} autoFocus required />
                             </FormInput>
                             <Button text="Add" type="submit" />
                         </Form>
@@ -137,6 +173,10 @@ const Home = () => {
                             <FormInput>  
                                 <label>Minutes</label>
                                 <Input type="text" value={weekMinutes} readOnly />
+                            </FormInput>
+                            <FormInput>
+                                <label>U$</label>
+                                <Input type="text" value={weekDollars} readOnly />
                             </FormInput>
                             <FormInput>
                                 <label>R$</label>
@@ -172,6 +212,10 @@ const Home = () => {
                                 <Input type="text" value={monthMinutes} readOnly />
                             </FormInput>
                             <FormInput>
+                                <label>U$</label>
+                                <Input type="text" value={monthDollars} readOnly />
+                            </FormInput>
+                            <FormInput>
                                 <label>R$</label>
                                 <Input type="text" value={monthReals} readOnly />
                             </FormInput>
@@ -186,6 +230,45 @@ const Home = () => {
                                 <Input type="text" value={lastMonthMinutes} readOnly />
                             </FormInput>
                         </Form>
+                    </SectionMain>
+                </Section>
+                
+                <Section>
+                    <SectionHeader>
+                      <h1>Custom Interval</h1>
+                      <Hr/>
+                    </SectionHeader>
+                    <SectionMain>
+                        <Form onSubmit={handleFilter} >
+                            <FormInput>
+                                <label>From</label>
+                                <InputDate type="date" value={from} onChange={ e => setFrom(e.target.value)} />
+                            </FormInput>
+                            <FormInput>  
+                                <label>To</label>
+                                <InputDate type="date" value={to} onChange={ e => setTo(e.target.value)} />
+                            </FormInput>
+                            <Button text="Filter" type="submit" />
+                        </Form>
+                        <Form>
+                            <FormInput>
+                                <label>Tasks</label>
+                                <Input type="text" value={customTasks} readOnly />
+                            </FormInput>
+                            <FormInput>  
+                                <label>Minutes</label>
+                                <Input type="text" value={customMinutes} readOnly />
+                            </FormInput>
+                            <FormInput>
+                                <label>U$</label>
+                                <Input type="text" value={customDollars} readOnly />
+                            </FormInput>
+                            <FormInput>
+                                <label>R$</label>
+                                <Input type="text" value={customReals} readOnly />
+                            </FormInput>
+                        </Form>
+
                     </SectionMain>
                 </Section>
             </Main>      

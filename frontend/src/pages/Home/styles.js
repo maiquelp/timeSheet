@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 
 export const Main = styled.main`
-  padding: 20px;
-  margin-top: 20px;
+  padding: 20px 20px 0px 20px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   background-color: var(--color-main-background);
@@ -60,4 +60,9 @@ export const Hr = styled.hr`
 
 export const InputLast = styled(Input)`
   width: 280px;
+`;
+
+export const InputDate = styled(Input)`
+  width: 180px;
+  text-align: right;
 `;

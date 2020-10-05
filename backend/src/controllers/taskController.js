@@ -8,15 +8,34 @@ function formatDate(date) {
   return '' + y + '-' + (m<=9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d);
 }
 
-const getWeekDays = (sundayParm, saturdayParm ) => {
-  const sunday = new Date();
-  const saturday = new Date();
+// const getWeekDays = (sundayParm, saturdayParm ) => {
+//   const sunday = new Date();
+//   const saturday = new Date();
   
-  sunday.setDate(sunday.getDate() - (sunday.getDay() + 7) % sundayParm);
-  saturday.setDate(saturday.getDate() + (saturday.getDay() - saturdayParm) % 7);
+//   // sunday.setDate(sunday.getDate() - (sunday.getDay() + 7) % 7);
+//   // saturday.setDate(saturday.getDate() + (saturday.getDay() + 7) % 14);
+  
+//   sunday.setDate(sunday.getDate() - (sunday.getDay() + 7) % 14);
+//   saturday.setDate(saturday.getDate() - (saturday.getDay() + 7) % 7);
 
-  return [formatDate(sunday), formatDate(saturday)];
-};
+//   console.log(sunday + saturday);
+
+//   return [formatDate(sunday), formatDate(saturday)];
+// };
+
+const getSunday = (period) => {
+  const sunday = new Date();
+  sunday.setDate(sunday.getDate() - (sunday.getDay() + 7) % period);
+  return formatDate(sunday);
+}
+
+const getSaturday = (period) => {
+  const saturday = new Date();
+  period === 7 ?
+    saturday.setDate(saturday.getDate() - (saturday.getDay() + 7) % period) :
+    saturday.setDate(saturday.getDate() + (saturday.getDay() + 7) % period);
+  return formatDate(saturday);
+}
 
 const getMonthDays = (month) => {
   const date = new Date();
@@ -71,21 +90,23 @@ module.exports = {
 
     async indexWeek(req, res) {
       try {
-        const [weekTasks] = await connection('task').count('id as tasks').whereBetween('submit', getWeekDays(7, 1));
+        const [weekTasks] = await connection('task').count('id as tasks').whereBetween('submit', [getSunday(7), getSaturday(14)]);
 
-        const [weekMinutes] = await connection('task').sum('time as minutes').whereBetween('submit', getWeekDays(7, 1));
+        const [weekMinutes] = await connection('task').sum('time as minutes').whereBetween('submit', [getSunday(7), getSaturday(14)]);
         
         const [cost] = await connection('settings').select('cost');
 
-        const [dollar] = await connection('settings').select('dollar');
+        const [dollarVar] = await connection('settings').select('dollar');
+        
+        const dollars = { dollars: weekMinutes.minutes / 60 * cost.cost };
 
-        const reals = { reals: weekMinutes.minutes / 60 * cost.cost * dollar.dollar };
+        const reals = { reals: dollars.dollars * dollarVar.dollar };
 
-        const [LastWeekTasks] = await connection('task').count('id as lastTasks').whereBetween('submit', getWeekDays(14, 8));
+        const [LastWeekTasks] = await connection('task').count('id as lastTasks').whereBetween('submit', [getSunday(14), getSaturday(7)]);
 
-        const [lastWeekMinutes] = await connection('task').sum('time as lastMinutes').whereBetween('submit', getWeekDays(14, 8));
+        const [lastWeekMinutes] = await connection('task').sum('time as lastMinutes').whereBetween('submit', [getSunday(14), getSaturday(7)]);
 
-        return res.json([weekTasks, weekMinutes, reals, LastWeekTasks, lastWeekMinutes]);
+        return res.json([weekTasks, weekMinutes, dollars, reals, LastWeekTasks, lastWeekMinutes]);
 
       } catch (err) {
         return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
@@ -100,21 +121,46 @@ module.exports = {
         
         const [cost] = await connection('settings').select('cost');
 
-        const [dollar] = await connection('settings').select('dollar');
+        const [dollarVar] = await connection('settings').select('dollar');
 
-        const reals = { reals: monthMinutes.minutes / 60 * cost.cost * dollar.dollar };
+        const dollars = { dollars: monthMinutes.minutes / 60 * cost.cost };
+
+        const reals = { reals: dollars.dollars * dollarVar.dollar };
 
         const [LastMonthTasks] = await connection('task').count('id as lastTasks').whereBetween('submit', getMonthDays(-1));
 
         const [lastMonthMinutes] = await connection('task').sum('time as lastMinutes').whereBetween('submit', getMonthDays(-1));
 
-        return res.json([monthTasks, monthMinutes, reals, LastMonthTasks, lastMonthMinutes]);
+        return res.json([monthTasks, monthMinutes, dollars, reals, LastMonthTasks, lastMonthMinutes]);
 
       } catch (err) {
         return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
       }
-    }
+    },
 
+    async indexDateInterval(req, res) {
+      const interval = req.query;
+      
+      try {
+        const [intervalTasks] = await connection('task').count('id as tasks').whereBetween('submit', [interval.from, interval.to]);
+
+        const [intervalMinutes] = await connection('task').sum('time as minutes').whereBetween('submit', [interval.from, interval.to]);
+        
+        const [cost] = await connection('settings').select('cost');
+
+        const [dollarVar] = await connection('settings').select('dollar');
+
+        const dollars = { dollars: intervalMinutes.minutes / 60 * cost.cost };
+
+        const reals = { reals: dollars.dollars * dollarVar.dollar };
+
+        return res.json([intervalTasks, intervalMinutes, dollars, reals]);
+
+      } catch (error) {
+        return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
+
+      }
+    }
 
 
 }

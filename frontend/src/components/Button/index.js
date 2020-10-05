@@ -6,6 +6,7 @@ import { ButtonStyle, Span } from './styles';
 import plusCircle from '../../assets/images/plus-circle.svg';
 import settings from '../../assets/images/settings.svg';
 import undo from '../../assets/images/undo.svg';
+import filter from '../../assets/images/filter.svg';
 
 function Button(props) {
   let img = null;
@@ -13,8 +14,10 @@ function Button(props) {
     img = plusCircle
   } else if (props.text === 'Settings'){
     img = settings
+  } else if (props.text === 'Undo'){
+    img = undo
   } else {
-    img = undo 
+    img = filter 
   }
   return (
     <ButtonStyle>
