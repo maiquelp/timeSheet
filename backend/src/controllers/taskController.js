@@ -77,7 +77,7 @@ module.exports = {
     async delete(req,res) {
       try {
         
-          const subQuery = connection('task').select('id').limit(1).orderBy('id', 'desc');
+          const subQuery = await connection('task').select('id').limit(1).orderBy('id', 'desc');
           
           await connection('task').where('id', subQuery).del();
 
@@ -90,12 +90,13 @@ module.exports = {
 
     async indexWeek(req, res) {
       try {
-        const [weekTasks] = await connection('task').count('id as tasks').whereBetween('submit', [getSunday(7), getSaturday(14)]);
 
+        const [weekTasks] = await connection('task').count('id as tasks').whereBetween('submit', [getSunday(7), getSaturday(14)]);
+        
         const [weekMinutes] = await connection('task').sum('time as minutes').whereBetween('submit', [getSunday(7), getSaturday(14)]);
         
         const [cost] = await connection('settings').select('cost');
-
+        
         const [dollarVar] = await connection('settings').select('dollar');
         
         const dollars = { dollars: weekMinutes.minutes / 60 * cost.cost };
@@ -104,7 +105,7 @@ module.exports = {
 
         const [LastWeekTasks] = await connection('task').count('id as lastTasks').whereBetween('submit', [getSunday(14), getSaturday(7)]);
 
-        const [lastWeekMinutes] = await connection('task').sum('time as lastMinutes').whereBetween('submit', [getSunday(14), getSaturday(7)]);
+        const [lastWeekMinutes] = await connection.raw(`select coalesce(sum(time), 0) as lastMinutes from task where submit between ${getSunday(14)} and ${getSaturday(7)}`);
 
         return res.json([weekTasks, weekMinutes, dollars, reals, LastWeekTasks, lastWeekMinutes]);
 
@@ -129,7 +130,7 @@ module.exports = {
 
         const [LastMonthTasks] = await connection('task').count('id as lastTasks').whereBetween('submit', getMonthDays(-1));
 
-        const [lastMonthMinutes] = await connection('task').sum('time as lastMinutes').whereBetween('submit', getMonthDays(-1));
+        const [lastMonthMinutes] = await connection.raw(`select coalesce(sum(time), 0) as lastMinutes from task where submit between ${split.getMonthDays(-1)}`);
 
         return res.json([monthTasks, monthMinutes, dollars, reals, LastMonthTasks, lastMonthMinutes]);
 
