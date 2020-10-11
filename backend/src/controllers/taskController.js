@@ -4,24 +4,8 @@ function formatDate(date) {
   const d = date.getDate();
   const m = date.getMonth() + 1; //Month from 0 to 11
   const y = date.getFullYear();
-
-  return '' + y + '-' + (m<=9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d);
+  return '' + y + '-' + (m<=9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d); 
 }
-
-// const getWeekDays = (sundayParm, saturdayParm ) => {
-//   const sunday = new Date();
-//   const saturday = new Date();
-  
-//   // sunday.setDate(sunday.getDate() - (sunday.getDay() + 7) % 7);
-//   // saturday.setDate(saturday.getDate() + (saturday.getDay() + 7) % 14);
-  
-//   sunday.setDate(sunday.getDate() - (sunday.getDay() + 7) % 14);
-//   saturday.setDate(saturday.getDate() - (saturday.getDay() + 7) % 7);
-
-//   console.log(sunday + saturday);
-
-//   return [formatDate(sunday), formatDate(saturday)];
-// };
 
 const getSunday = (period) => {
   const sunday = new Date();
@@ -37,15 +21,28 @@ const getSaturday = (period) => {
   return formatDate(saturday);
 }
 
-const getMonthDays = (month) => {
-  const date = new Date();
-  const y = date.getFullYear();
-  const m = date.getMonth() + month;
-  const firstDay = new Date(y, m, 1);
-  const lastDay = new Date(y, m + 1, 1);
-
-  return [formatDate(firstDay), formatDate(lastDay)];
+const getFirstDay = (param) => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + param;
+  return formatDate(new Date(y, m, 1));
 }
+
+const getLastDay = (param) => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + param;
+  return formatDate(new Date(y, m + 1, 1));
+}
+
+const getNextDay = (param) => {
+  const date = new Date(param);
+  const y = date.getFullYear();
+  const m = date.getMonth();
+  const d = date.getDate();
+  return formatDate(new Date(y, m, d + 2));
+}
+
 
 module.exports = {
 
@@ -90,9 +87,9 @@ module.exports = {
 
     async indexWeek(req, res) {
       try {
-
+        //current week tasks
         const [weekTasks] = await connection('task').count('id as tasks').whereBetween('submit', [getSunday(7), getSaturday(14)]);
-        
+        //current week minutes
         const [weekMinutes] = await connection('task').sum('time as minutes').whereBetween('submit', [getSunday(7), getSaturday(14)]);
         
         const [cost] = await connection('settings').select('cost');
@@ -102,10 +99,10 @@ module.exports = {
         const dollars = { dollars: weekMinutes.minutes / 60 * cost.cost };
 
         const reals = { reals: dollars.dollars * dollarVar.dollar };
-
+        //past week tasks
         const [LastWeekTasks] = await connection('task').count('id as lastTasks').whereBetween('submit', [getSunday(14), getSaturday(7)]);
-
-        const [lastWeekMinutes] = await connection.raw(`select coalesce(sum(time), 0) as lastMinutes from task where submit between ${getSunday(14)} and ${getSaturday(7)}`);
+        //past week minutes
+        const [lastWeekMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as lastMinutes')).whereBetween('submit', [getSunday(14), getSaturday(7)]);
 
         return res.json([weekTasks, weekMinutes, dollars, reals, LastWeekTasks, lastWeekMinutes]);
 
@@ -116,10 +113,11 @@ module.exports = {
 
     async indexMonth(req, res) {
       try {
-        const [monthTasks] = await connection('task').count('id as tasks').whereBetween('submit', getMonthDays(0));
+        //current month tasks
+        const [monthTasks] = await connection('task').count('id as tasks').whereBetween('submit', [getFirstDay(0), getLastDay(0)]);
+        //current month minutes
+        const [monthMinutes] = await connection('task').sum('time as minutes').whereBetween('submit', [getFirstDay(0), getLastDay(0)]);
 
-        const [monthMinutes] = await connection('task').sum('time as minutes').whereBetween('submit', getMonthDays(0));
-        
         const [cost] = await connection('settings').select('cost');
 
         const [dollarVar] = await connection('settings').select('dollar');
@@ -127,12 +125,12 @@ module.exports = {
         const dollars = { dollars: monthMinutes.minutes / 60 * cost.cost };
 
         const reals = { reals: dollars.dollars * dollarVar.dollar };
+        //past month tasks
+        const [lastMonthTasks] = await connection('task').count('id as lastTasks').whereBetween('submit', [getFirstDay(-1), getLastDay(-1)]);
+        //past month minutes
+        const [lastMonthMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as lastMinutes')).whereBetween('submit', [getFirstDay(-1), getLastDay(-1)]);
 
-        const [LastMonthTasks] = await connection('task').count('id as lastTasks').whereBetween('submit', getMonthDays(-1));
-
-        const [lastMonthMinutes] = await connection.raw(`select coalesce(sum(time), 0) as lastMinutes from task where submit between ${split.getMonthDays(-1)}`);
-
-        return res.json([monthTasks, monthMinutes, dollars, reals, LastMonthTasks, lastMonthMinutes]);
+        return res.json([monthTasks, monthMinutes, dollars, reals, lastMonthTasks, lastMonthMinutes]);
 
       } catch (err) {
         return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
@@ -141,12 +139,13 @@ module.exports = {
 
     async indexDateInterval(req, res) {
       const interval = req.query;
-      
+      const from = interval.from;
+      const to = getNextDay(interval.to);
       try {
-        const [intervalTasks] = await connection('task').count('id as tasks').whereBetween('submit', [interval.from, interval.to]);
+        const [intervalTasks] = await connection('task').count('id as tasks').whereBetween('submit', [from, to]);
 
-        const [intervalMinutes] = await connection('task').sum('time as minutes').whereBetween('submit', [interval.from, interval.to]);
-        
+        const [intervalMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as minutes')).whereBetween('submit', [from, to]);
+
         const [cost] = await connection('settings').select('cost');
 
         const [dollarVar] = await connection('settings').select('dollar');
@@ -159,7 +158,6 @@ module.exports = {
 
       } catch (error) {
         return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
-
       }
     }
 
