@@ -1,7 +1,4 @@
 :root {
-    /* font-size: 60%; */
-    /* default size = 16px * 0,6 = 9,6px */
-
     --color-white: #FFFFFF;
     --color-primary: #6C63FF;
     --color-main-background: #DDE1EC;
@@ -24,13 +21,11 @@ body {
 
 #root {
     display: flex;
-    align-items: center;
     justify-content: center;
 }
 
 body, input, button {
     font: 600 16px Archivo; 
-    /* 1,6rem * 9,6px = 15,36px*/
     color: var(--color-primary);
 }
 
