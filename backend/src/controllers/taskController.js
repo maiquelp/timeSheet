@@ -160,6 +160,5 @@ module.exports = {
         return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
       }
     }
-
-
+    
 }
