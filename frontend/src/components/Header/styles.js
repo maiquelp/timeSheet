@@ -2,13 +2,11 @@ import styled from 'styled-components';
 
 export const Container = styled.header`
   display: flex;
-  flex-direction: row;
   justify-content: space-between;
 `;
 
 export const LogoContainer = styled.section`
   display: flex;
-  flex-direction: row;
 `;
 
 export const LogoText = styled.p`
@@ -18,3 +16,7 @@ export const LogoText = styled.p`
   margin-bottom: 4px;
 `;
 
+export const ButtonContainer = styled.aside`
+  display: flex;
+  align-items: flex-end;
+`;

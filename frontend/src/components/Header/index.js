@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { Container, LogoContainer, LogoText } from './styles';
+import { Container, LogoContainer, LogoText, ButtonContainer } from './styles';
 
-import Button from '../Button';
-
+import Button from '../Button'
 
 import logo from '../../assets/images/logo.png';
+import { Link } from 'react-router-dom';
 
 
 function Header(props) {
@@ -15,7 +15,11 @@ function Header(props) {
         <img src={logo} alt="TimeSheet"/>
         <LogoText>TimeSheet</LogoText>
       </LogoContainer>
-      <Button text={props.text} />
+      <ButtonContainer>
+        <Link to={props.path}>
+          <Button text={props.text} />
+        </Link>
+      </ButtonContainer>
     </Container>
   );
 }

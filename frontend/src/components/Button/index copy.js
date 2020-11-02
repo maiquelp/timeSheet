@@ -10,16 +10,20 @@ import home from '../../assets/images/home.svg';
 import save from '../../assets/images/save.svg';
 
 export default function Button({text}) {
-  const button = {
-    Add: () => plus,
-    Settings: () => settings,
-    Undo: () => undo,
-    Filter: () => filter,
-    Home: () => home,
-    Save: () => save 
+  let img = null;
+  if (text === 'Add'){
+    img = plus;
+  } if (text === 'Settings'){
+    img = settings;
+  } if (text === 'Undo'){
+    img = undo;
+  } if (text === 'Filter'){
+    img = filter;
+  } if (text === 'Home'){
+    img = home;
+  } else {
+    img = save ;
   }
-
-  const img = button[text]();
 
   return (
     <ButtonStyle>

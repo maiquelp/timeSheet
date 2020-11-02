@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 
 import api from '../../services/api';
 
-import { Main, Section, SectionHeader, SectionMain, Form, FormInput, Input, InputLast, Hr, InputDate} from './styles';
+import { Main, Section, SectionHeader, SectionMain, Form, FormInput, Input, InputLast, Hr, InputDate } from './styles';
 
 import Header from '../../components/Header';
 import Button from '../../components/Button';
@@ -124,7 +124,7 @@ const Home = () => {
 
     return (
         <div className="container">
-            <Header text="Settings"/>
+            <Header text="Settings" path="/settings" />
             <Main>
                 <Section>
                     <SectionHeader>

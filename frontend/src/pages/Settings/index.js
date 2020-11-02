@@ -2,120 +2,87 @@ import React, {useState, useEffect} from 'react';
 
 import api from '../../services/api';
 
-import { Main, Section, SectionHeader, SectionMain, Form, FormInput, Input, InputLast, Hr, InputDate} from './styles';
+import { Main, Section, SectionHeader, SectionMain, Form, FormInput, Input, Hr } from './styles';
 
 import Header from '../../components/Header';
 import Button from '../../components/Button';
 
-const Home = () => {
+const Settings = () => {
 
     const [dollar, setDollar] = useState('');
     const [cost, setCost] = useState('');
     const [discounts, setDiscounts] = useState('');
 
-    useEffect( () => {
-      getData();
+    useEffect(() => {
+      getSettings();
     }, []);
 
-    const getLastTask = async () => {
+    const setSettings = async (e) => {
+        e.preventDefault();
+
         try {
-            const res = await api.get('lastTask');
-            const last = `${res.data[0].time} minutes in ${res.data[0].submit}`;
-            setLastTask(last);
+            const data = {dollar, cost, discounts};
+            await api.put('settings', data);
+            alert('Recorded!');
         } catch (err) {
-            alert(`Error on get the last task. \n Original Message:\n ${err}`);
+            alert(`Error on saving settings. \n Original Message:\n ${err}`);
         }
     };
 
-    const undoTask = async (e) => {
-      e.preventDefault();  
+    const getSettings = async () => {
       try {
-          await api.delete('deleteTask');
-          getLastTask();
-          getWeekTasks();
-          getMonthTasks();    
-          alert('Deleted!');
-        } catch (err) {
-          alert(`Error on deleting last task. \n Original Message:\n ${err}`);
-        }
-    };
-
-    const getWeekTasks = async () => {
-      try {
-          const res = await api.get('week');
-          setWeekTasks(res.data[0].tasks);
-          setWeekMinutes(res.data[1].minutes);
-          setWeekDollars(parseFloat(res.data[2].dollars).toFixed(2));
-          setWeekReals(parseFloat(res.data[3].reals).toFixed(2));
-          setLastWeekTasks(res.data[4].lastTasks);
-          setLastWeekMinutes(res.data[5].lastMinutes);
+          const {data} = await api.get('settings');
+          const {dollar} = data[0];
+          const {cost} = data[0];
+          const {discounts} = data[0];
+          setDollar(dollar);
+          setCost(cost);
+          setDiscounts(discounts);
       } catch (err) {
-          alert(`Error on get the week results. \n Original Message:\n ${err}`);
+          alert(`Error on get settings. \n Original Message:\n ${err}`);
       }
     };
-
-    const getMonthTasks = async () => {
-      try {
-          const res = await api.get('month');
-          setMonthTasks(res.data[0].tasks);
-          setMonthMinutes(res.data[1].minutes);
-          setMonthDollars(parseFloat(res.data[2].dollars).toFixed(2));
-          setMonthReals(parseFloat(res.data[3].reals).toFixed(2));
-          setLastMonthTasks(res.data[4].lastTasks);
-          setLastMonthMinutes(res.data[5].lastMinutes);
-      } catch (err) {
-          alert(`Error on get the month results. \n Original Message:\n ${err}`);
-      }
-    };
-
-    const handleFilter = async (e) => {
-      e.preventDefault();  
-
-      try {
-        const res = await api.get('interval', {
-            params: {
-                from : from,
-                to : to
-            }
-        });
-        setCustomTasks(res.data[0].tasks);
-        setCustomMinutes(res.data[1].minutes);
-        setCustomDollars(parseFloat(res.data[2].dollars).toFixed(2));
-        setCustomReals(parseFloat(res.data[3].reals).toFixed(2));
-      } catch (err) {
-        alert(`Error on fetching data. \n Original Message:\n ${err}`);
-      }
-    };  
 
     return (
         <div className="container">
-            <Header text="Settings"/>
+            <Header text="Home" path="/" />
             <Main>
                 <Section>
                     <SectionHeader>
-                      <h1>Task</h1>
+                      <h1>Settings</h1>
                       <Hr/>
                     </SectionHeader>
                     <SectionMain>
-                        <Form onSubmit={taskSubmit}>
+                        <Form onSubmit={setSettings}>
                             <FormInput>
+                                <label>Dollar</label>
+                                <Input type="number" value={dollar} onChange={ e => setDollar(e.target.value)}
+                                    min="0.01" step="0.01" required  />
+                            </FormInput>
+                            <FormInput>  
+                                <label>Cost</label>
+                                <Input type="number" value={cost} onChange={ e => setCost(e.target.value)}
+                                    min="0.01" step="0.01" required />
+                            </FormInput>
+                            <FormInput>
+                                <label>Disconts</label>
+                                <Input type="number" value={discounts} onChange={ e => setDiscounts(e.target.value)}
+                                    min="0.01" step="0.01" required />
+                            </FormInput>
+                            <Button text="Save" type="submit" />
+
+                            {/* <FormInput>
                                 <label>Task<br/> Minutes</label>
                                 <Input onChange={ e => setTime(e.target.value)} type="number" 
                                     min="0.5" step="0.5" value={time} autoFocus required />
                             </FormInput>
-                            <Button text="Add" type="submit" />
+                            <Button text="Add" type="submit" /> */}
                         </Form>
-                        <Form onSubmit={undoTask}>
-                            <FormInput>
-                                <label>Last<br/> Addition</label>
-                                <InputLast type="text" value={lastTask} readOnly/>
-                            </FormInput>    
-                            <Button text="Undo" type="submit" />
-                        </Form>
+                        
                     </SectionMain>
                 </Section>
 
-                <Section>
+                {/* <Section>
                     <SectionHeader>
                       <h1>Week Results</h1>
                       <Hr/>
@@ -226,10 +193,10 @@ const Home = () => {
                         </Form>
 
                     </SectionMain>
-                </Section>
+                </Section> */}
             </Main>      
         </div>
     )
 }
 
-export default Home;
+export default Settings;

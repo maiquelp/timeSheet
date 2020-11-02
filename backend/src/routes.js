@@ -20,6 +20,6 @@ routes.get('/interval', taskController.indexDateInterval);
 
 routes.get('/settings', settingsController.index);
 
-routes.put('/updateSettings', settingsController.update);
+routes.put('/settings', settingsController.update);
 
 module.exports = routes;

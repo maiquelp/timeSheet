@@ -74,9 +74,9 @@ module.exports = {
     async delete(req,res) {
       try {
         
-          const subQuery = await connection('task').select('id').limit(1).orderBy('id', 'desc');
+          const [task] = await connection('task').select('id').limit(1).orderBy('id', 'desc');
           
-          await connection('task').where('id', subQuery).del();
+          await connection('task').where('id', task.id).del();
 
           return res.status(204).send();
           
@@ -90,7 +90,7 @@ module.exports = {
         //current week tasks
         const [weekTasks] = await connection('task').count('id as tasks').whereBetween('submit', [getSunday(7), getSaturday(14)]);
         //current week minutes
-        const [weekMinutes] = await connection('task').sum('time as minutes').whereBetween('submit', [getSunday(7), getSaturday(14)]);
+        const [weekMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as minutes')).whereBetween('submit', [getSunday(7), getSaturday(14)]);
         
         const [cost] = await connection('settings').select('cost');
         
@@ -116,7 +116,7 @@ module.exports = {
         //current month tasks
         const [monthTasks] = await connection('task').count('id as tasks').whereBetween('submit', [getFirstDay(0), getLastDay(0)]);
         //current month minutes
-        const [monthMinutes] = await connection('task').sum('time as minutes').whereBetween('submit', [getFirstDay(0), getLastDay(0)]);
+        const [monthMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as minutes')).whereBetween('submit', [getFirstDay(0), getLastDay(0)]);
 
         const [cost] = await connection('settings').select('cost');
 

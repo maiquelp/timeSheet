@@ -54,8 +54,16 @@ export const Input = styled.input`
   }
 `;
 
+// export const InputNumber = styled.input[type="number"]`
+//   &:-webkit-outer-spin-button, &:-webkit-inner-spin-button {
+//     height: 80px;
+//   }
+// `;
+
 export const Hr = styled.hr`
-  border-top: 1px solid var(--color-gray);
+  background: var(--color-gray);
+  height: 1px;
+  border: 0px;
 `;
 
 export const InputLast = styled(Input)`
