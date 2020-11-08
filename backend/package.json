@@ -1,12 +1,13 @@
 {
   "name": "timesheet-backend",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "timesheet control api",
   "main": "./src/server.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test jest",
-    "start": "cross-env NODE_ENV=production node ./src/server.js",
-    "dev": "cross-env NODE_ENV=development nodemon ./src/server.js"
+    "build": "tsc",
+    "dev:server": "ts-node-dev --transpile-only --ignore-watch node_modules src/server.ts",
+    "knex:migrate": "knex --knexfile knexfile.ts migrate:latest",
+    "knex:seed": "knex --knexfile knexfile.ts seed:run"
   },
   "keywords": [
     "timesheet"
@@ -15,12 +16,14 @@
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
-    "cross-env": "^7.0.2",
     "express": "^4.17.1",
     "knex": "^0.21.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.4",
-    "sqlite3": "^5.0.0"
+    "@types/cors": "^2.8.8",
+    "@types/express": "^4.17.8",
+    "sqlite3": "^5.0.0",
+    "ts-node-dev": "^1.0.0",
+    "typescript": "^4.0.5"
   }
 }

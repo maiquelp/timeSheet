@@ -1,8 +1,9 @@
-const connection = require('../database/connection');
+import { Request, Response } from 'express';
+import connection from '../database/connection';
 
-module.exports = {
+export = {
 
-    async update(req, res) {
+    async update(req :Request, res: Response) {
         const settings = req.body;
      
         try {
@@ -15,7 +16,7 @@ module.exports = {
         }
     },
 
-    async index(req, res) {
+    async index(req: Request, res: Response) {
       
       try {
         const settings = await connection('settings').select('*');

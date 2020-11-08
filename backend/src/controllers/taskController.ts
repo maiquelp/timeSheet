@@ -1,19 +1,20 @@
-const connection = require('../database/connection');
+import { Request, Response } from 'express';
+import connection from '../database/connection';
 
-function formatDate(date) {
+function formatDate(date: Date): string {
   const d = date.getDate();
   const m = date.getMonth() + 1; //Month from 0 to 11
   const y = date.getFullYear();
   return '' + y + '-' + (m<=9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d); 
 }
 
-const getSunday = (period) => {
+const getSunday = (period: number) => {
   const sunday = new Date();
   sunday.setDate(sunday.getDate() - (sunday.getDay() + 7) % period);
   return formatDate(sunday);
 }
 
-const getSaturday = (period) => {
+const getSaturday = (period: number) => {
   const saturday = new Date();
   period === 7 ?
     saturday.setDate(saturday.getDate() - (saturday.getDay() + 7) % period) :
@@ -21,21 +22,21 @@ const getSaturday = (period) => {
   return formatDate(saturday);
 }
 
-const getFirstDay = (param) => {
+const getFirstDay = (param: number) => {
   const now = new Date();
   const y = now.getFullYear();
   const m = now.getMonth() + param;
   return formatDate(new Date(y, m, 1));
 }
 
-const getLastDay = (param) => {
+const getLastDay = (param: number) => {
   const now = new Date();
   const y = now.getFullYear();
   const m = now.getMonth() + param;
   return formatDate(new Date(y, m + 1, 1));
 }
 
-const getNextDay = (param) => {
+const getNextDay = (param: string): string => {
   const date = new Date(param);
   const y = date.getFullYear();
   const m = date.getMonth();
@@ -44,9 +45,9 @@ const getNextDay = (param) => {
 }
 
 
-module.exports = {
+export = {
 
-    async create(req, res) {
+    async create(req: Request, res: Response) {
         const {time} = req.body;
      
         try {
@@ -59,7 +60,7 @@ module.exports = {
         }
     },
 
-    async indexLast(req, res) {
+    async indexLast(req: Request, res: Response) {
       
       try {
         const taskLatest = await connection('task').select('time', 'submit').limit(1).orderBy('id', 'desc');
@@ -71,7 +72,7 @@ module.exports = {
       }
     },
     
-    async delete(req,res) {
+    async delete(req: Request, res: Response) {
       try {
         
           const [task] = await connection('task').select('id').limit(1).orderBy('id', 'desc');
@@ -85,7 +86,7 @@ module.exports = {
         }
     },
 
-    async indexWeek(req, res) {
+    async indexWeek(req: Request, res: Response) {
       try {
         //current week tasks
         const [weekTasks] = await connection('task').count('id as tasks').whereBetween('submit', [getSunday(7), getSaturday(14)]);
@@ -111,7 +112,7 @@ module.exports = {
       }
     },
 
-    async indexMonth(req, res) {
+    async indexMonth(req: Request, res: Response) {
       try {
         //current month tasks
         const [monthTasks] = await connection('task').count('id as tasks').whereBetween('submit', [getFirstDay(0), getLastDay(0)]);
@@ -137,10 +138,10 @@ module.exports = {
       }
     },
 
-    async indexDateInterval(req, res) {
+    async indexDateInterval(req: Request, res: Response) {
       const interval = req.query;
-      const from = interval.from;
-      const to = getNextDay(interval.to);
+      const from = String(interval.from);
+      const to = getNextDay(String(interval.to));
       try {
         const [intervalTasks] = await connection('task').count('id as tasks').whereBetween('submit', [from, to]);
 
@@ -156,7 +157,7 @@ module.exports = {
 
         return res.json([intervalTasks, intervalMinutes, dollars, reals]);
 
-      } catch (error) {
+      } catch (err) {
         return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
       }
     }
