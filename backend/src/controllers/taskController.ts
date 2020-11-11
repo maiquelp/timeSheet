@@ -1,48 +1,8 @@
 import { Request, Response } from 'express';
 import TasksRepository from '../repositories/TasksRepository';
-
-const formatDate = (date: Date): string => {
-  const d = date.getDate();
-  const m = date.getMonth() + 1; //Month from 0 to 11
-  const y = date.getFullYear();
-  return '' + y + '-' + (m<=9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d); 
-}
-
-const getSunday = (period: number) => {
-  const sunday = new Date();
-  sunday.setDate(sunday.getDate() - (sunday.getDay() + 7) % period);
-  return formatDate(sunday);
-}
-
-const getSaturday = (period: number) => {
-  const saturday = new Date();
-  period === 7 ?
-    saturday.setDate(saturday.getDate() - (saturday.getDay() + 7) % period) :
-    saturday.setDate(saturday.getDate() + (saturday.getDay() + 7) % period);
-  return formatDate(saturday);
-}
-
-const getFirstDay = (param: number) => {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth() + param;
-  return formatDate(new Date(y, m, 1));
-}
-
-const getLastDay = (param: number) => {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth() + param;
-  return formatDate(new Date(y, m + 1, 1));
-}
-
-const getNextDay = (param: string): string => {
-  const date = new Date(param);
-  const y = date.getFullYear();
-  const m = date.getMonth();
-  const d = date.getDate();
-  return formatDate(new Date(y, m, d + 2));
-}
+import IndexIntervalService from '../services/IndexIntervalService';
+import IndexMonthService from '../services/IndexMonthService';
+import IndexWeekService from '../services/IndexWeekService';
 
 const tasksRepository = new TasksRepository();
 
@@ -85,14 +45,10 @@ export = {
     },
 
     async indexWeek(req: Request, res: Response) {
-      const currentWeekSunday = getSunday(7);
-      const currentWeekSaturday = getSaturday(14);
-      const pastWeekSunday = getSunday(14);
-      const pastWeekSaturday = getSaturday(7);
-      const weekData = {currentWeekSunday, currentWeekSaturday, pastWeekSunday, pastWeekSaturday};
       try {
-        const response = await tasksRepository
-          .indexWeek(weekData);
+        const indexWeek = new IndexWeekService(tasksRepository);
+        const response = await indexWeek.execute();
+        
         return res.json(response);
 
       } catch (err) {
@@ -101,14 +57,9 @@ export = {
     },
 
     async indexMonth(req: Request, res: Response) {
-      const currentMonthFirstDay = getFirstDay(0);
-      const currentMonthLastDay = getLastDay(0);
-      const pastMonthFirstDay = getFirstDay(-1);
-      const pastMonthLastDay = getLastDay(-1);
-      const monthData = {currentMonthFirstDay, currentMonthLastDay, pastMonthFirstDay, pastMonthLastDay};
       try {
-        const response = await tasksRepository
-          .indexMonth(monthData);
+        const indexMonth = new IndexMonthService(tasksRepository);
+        const response = await indexMonth.execute();
 
         return res.json(response);
 
@@ -118,18 +69,19 @@ export = {
     },
 
     async indexDateInterval(req: Request, res: Response) {
-      const request = req.query;
-      const from = String(request.from);
-      const to = getNextDay(String(request.to));
-      const interval = {from, to}
       try {
-        const response = await tasksRepository.indexInterval(interval);
+        const request = req.query;
+        const from = String(request.from);
+        const to = String(request.to);
+
+        const indexInterval = new IndexIntervalService(tasksRepository);
+
+        const response = await indexInterval.execute({from, to});
 
         return res.json(response);
 
       } catch (err) {
         return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
       }
-    }
-    
+    } 
 }
