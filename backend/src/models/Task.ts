@@ -1,8 +1,8 @@
 class Task {
   time: number;
 
-  constructor(time: number){
-    this.time = time
+  constructor({time}: Task){
+    this.time = time;
   }
 }
 

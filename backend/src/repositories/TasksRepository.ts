@@ -1,15 +1,29 @@
 import connection from "../database/connection";
 import Task from "../models/Task";
 
+interface WeekDTO {
+  currentWeekSunday: string;
+  currentWeekSaturday: string;
+  pastWeekSunday: string;
+  pastWeekSaturday: string;
+}
+
+interface MonthDTO {
+  currentMonthFirstDay: string;
+  currentMonthLastDay: string;
+  pastMonthFirstDay: string;
+  pastMonthLastDay: string;
+}
+
+interface IntervalDTO {
+  from: string;
+  to: string;
+}
+
 class TasksRepository {
-  // private tasks: Task;
-
-  // constructor(){
-  //   this.tasks = {time: 0};
-  // }
-
-  public async create(time: number) {
-    const task = new Task(time);
+ 
+  public async create({time}: Task) {
+    const task = new Task({time});
 
     await connection('task').insert(task);
   };
@@ -26,61 +40,70 @@ class TasksRepository {
     await connection('task').where('id', task.id).del();
   };
 
-  public async indexWeek(week: String[]) {
-    const [weekTasks] = await connection('task').count('id as tasks').whereBetween('submit', [week[0], week[1]]);
+  public async indexWeek({currentWeekSunday, currentWeekSaturday, pastWeekSunday, pastWeekSaturday}: WeekDTO) {
+    const [{tasks}] = await connection('task').count('id as tasks')
+      .whereBetween('submit', [currentWeekSunday, currentWeekSaturday]);
       
-    const [weekMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as minutes')).whereBetween('submit', [week[0], week[1]]);
+    const [{minutes}] = await connection('task').select(connection
+      .raw('coalesce(sum(time), 0) as minutes')).whereBetween('submit', [currentWeekSunday, currentWeekSaturday]);
         
-    const [cost] = await connection('settings').select('cost');
+    const [{cost}] = await connection('settings').select('cost');
         
-    const [dollarVar] = await connection('settings').select('dollar');
+    const [{dollar: dollarValue}] = await connection('settings').select('dollar');
         
-    const dollars = { dollars: weekMinutes.minutes / 60 * cost.cost };
+    const dollars = minutes / 60 * cost;
 
-    const reals = { reals: dollars.dollars * dollarVar.dollar };
+    const reals = dollars * dollarValue;
     //past week tasks
-    const [LastWeekTasks] = await connection('task').count('id as lastTasks').whereBetween('submit', [week[2], week[3]]);
+    const [{lastTasks}] = await connection('task').count('id as lastTasks')
+      .whereBetween('submit', [pastWeekSunday, pastWeekSaturday]);
     //past week minutes
-    const [lastWeekMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as lastMinutes')).whereBetween('submit', [week[2], week[3]]);
+    const [{lastMinutes}] = await connection('task').select(connection
+      .raw('coalesce(sum(time), 0) as lastMinutes')).whereBetween('submit', [pastWeekSunday, pastWeekSaturday]);
 
-    return [weekTasks, weekMinutes, dollars, reals, LastWeekTasks, lastWeekMinutes];
+    return {tasks, minutes, dollars, reals, lastTasks, lastMinutes};
   };
 
-  public async indexMonth(month: String[]) {
+  public async indexMonth({currentMonthFirstDay, currentMonthLastDay, pastMonthFirstDay, pastMonthLastDay}: MonthDTO) {
     //current month tasks
-    const [monthTasks] = await connection('task').count('id as tasks').whereBetween('submit', [month[0], month[1]]);
+    const [{tasks}] = await connection('task').count('id as tasks')
+      .whereBetween('submit', [currentMonthFirstDay, currentMonthLastDay]);
     //current month minutes
-    const [monthMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as minutes')).whereBetween('submit', [month[0], month[1]]);
+    const [{minutes}] = await connection('task').select(connection
+      .raw('coalesce(sum(time), 0) as minutes')).whereBetween('submit', [currentMonthFirstDay, currentMonthLastDay]);
 
-    const [cost] = await connection('settings').select('cost');
+    const [{cost}] = await connection('settings').select('cost');
 
-    const [dollarVar] = await connection('settings').select('dollar');
+    const [{dollar: dollarValue}] = await connection('settings').select('dollar');
 
-    const dollars = { dollars: monthMinutes.minutes / 60 * cost.cost };
+    const dollars = minutes / 60 * cost;
 
-    const reals = { reals: dollars.dollars * dollarVar.dollar };
+    const reals = dollars * dollarValue;
     //past month tasks
-    const [lastMonthTasks] = await connection('task').count('id as lastTasks').whereBetween('submit', [month[2], month[3]]);
+    const [{lastTasks}] = await connection('task').count('id as lastTasks')
+      .whereBetween('submit', [pastMonthFirstDay, pastMonthLastDay]);
     //past month minutes
-    const [lastMonthMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as lastMinutes')).whereBetween('submit', [month[2], month[3]]);
+    const [{lastMinutes}] = await connection('task').select(connection
+      .raw('coalesce(sum(time), 0) as lastMinutes')).whereBetween('submit', [pastMonthFirstDay, pastMonthLastDay]);
 
-    return [monthTasks, monthMinutes, dollars, reals, lastMonthTasks, lastMonthMinutes];
+    return {tasks, minutes, dollars, reals, lastTasks, lastMinutes};
   };
 
-  public async indexInterval(from: string, to: string) {
-    const [intervalTasks] = await connection('task').count('id as tasks').whereBetween('submit', [from, to]);
+  public async indexInterval({from, to}: IntervalDTO) {
+    const [{tasks}] = await connection('task').count('id as tasks').whereBetween('submit', [from, to]);
 
-    const [intervalMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as minutes')).whereBetween('submit', [from, to]);
+    const [{minutes}] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as minutes'))
+      .whereBetween('submit', [from, to]);
 
-    const [cost] = await connection('settings').select('cost');
+    const [{cost}] = await connection('settings').select('cost');
 
-    const [dollarVar] = await connection('settings').select('dollar');
+    const [{dollar: dollarValue}] = await connection('settings').select('dollar');
 
-    const dollars = { dollars: intervalMinutes.minutes / 60 * cost.cost };
+    const dollars = minutes / 60 * cost;
 
-    const reals = { reals: dollars.dollars * dollarVar.dollar };
+    const reals = dollars * dollarValue;
 
-    return [intervalTasks, intervalMinutes, dollars, reals];
+    return {tasks, minutes, dollars, reals};
   }
 }
 export default TasksRepository;

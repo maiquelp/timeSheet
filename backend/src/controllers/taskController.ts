@@ -52,7 +52,7 @@ export = {
         const {time} = req.body;
      
         try {
-            tasksRepository.create(time);
+            tasksRepository.create({time});
       
             return res.status(204).send();
 
@@ -85,8 +85,14 @@ export = {
     },
 
     async indexWeek(req: Request, res: Response) {
+      const currentWeekSunday = getSunday(7);
+      const currentWeekSaturday = getSaturday(14);
+      const pastWeekSunday = getSunday(14);
+      const pastWeekSaturday = getSaturday(7);
+      const weekData = {currentWeekSunday, currentWeekSaturday, pastWeekSunday, pastWeekSaturday};
       try {
-        const response = await tasksRepository.indexWeek([getSunday(7), getSaturday(14), getSunday(14), getSaturday(7)]);
+        const response = await tasksRepository
+          .indexWeek(weekData);
         return res.json(response);
 
       } catch (err) {
@@ -95,8 +101,14 @@ export = {
     },
 
     async indexMonth(req: Request, res: Response) {
+      const currentMonthFirstDay = getFirstDay(0);
+      const currentMonthLastDay = getLastDay(0);
+      const pastMonthFirstDay = getFirstDay(-1);
+      const pastMonthLastDay = getLastDay(-1);
+      const monthData = {currentMonthFirstDay, currentMonthLastDay, pastMonthFirstDay, pastMonthLastDay};
       try {
-        const response = await tasksRepository.indexMonth([getFirstDay(0), getLastDay(0), getFirstDay(-1), getLastDay(-1)]);
+        const response = await tasksRepository
+          .indexMonth(monthData);
 
         return res.json(response);
 
@@ -106,11 +118,12 @@ export = {
     },
 
     async indexDateInterval(req: Request, res: Response) {
-      const interval = req.query;
-      const from = String(interval.from);
-      const to = getNextDay(String(interval.to));
+      const request = req.query;
+      const from = String(request.from);
+      const to = getNextDay(String(request.to));
+      const interval = {from, to}
       try {
-        const response = await tasksRepository.indexInterval(from, to);
+        const response = await tasksRepository.indexInterval(interval);
 
         return res.json(response);
 
