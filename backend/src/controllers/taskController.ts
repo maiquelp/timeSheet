@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import connection from '../database/connection';
+import TasksRepository from '../repositories/TasksRepository';
 
-function formatDate(date: Date): string {
+const formatDate = (date: Date): string => {
   const d = date.getDate();
   const m = date.getMonth() + 1; //Month from 0 to 11
   const y = date.getFullYear();
@@ -44,6 +44,7 @@ const getNextDay = (param: string): string => {
   return formatDate(new Date(y, m, d + 2));
 }
 
+const tasksRepository = new TasksRepository();
 
 export = {
 
@@ -51,7 +52,7 @@ export = {
         const {time} = req.body;
      
         try {
-            await connection('task').insert({time});
+            tasksRepository.create(time);
       
             return res.status(204).send();
 
@@ -63,9 +64,9 @@ export = {
     async indexLast(req: Request, res: Response) {
       
       try {
-        const taskLatest = await connection('task').select('time', 'submit').limit(1).orderBy('id', 'desc');
+        const lastTask = await tasksRepository.indexLast();
         
-        return res.json(taskLatest);
+        return res.json(lastTask);
 
       } catch (err) {
         return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
@@ -73,39 +74,20 @@ export = {
     },
     
     async delete(req: Request, res: Response) {
-      try {
-        
-          const [task] = await connection('task').select('id').limit(1).orderBy('id', 'desc');
-          
-          await connection('task').where('id', task.id).del();
+      try {  
+        tasksRepository.delete();
 
-          return res.status(204).send();
+        return res.status(204).send();
           
-        } catch (err) {
-          return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
-        }
+      } catch (err) {
+        return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
+      }
     },
 
     async indexWeek(req: Request, res: Response) {
       try {
-        //current week tasks
-        const [weekTasks] = await connection('task').count('id as tasks').whereBetween('submit', [getSunday(7), getSaturday(14)]);
-        //current week minutes
-        const [weekMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as minutes')).whereBetween('submit', [getSunday(7), getSaturday(14)]);
-        
-        const [cost] = await connection('settings').select('cost');
-        
-        const [dollarVar] = await connection('settings').select('dollar');
-        
-        const dollars = { dollars: weekMinutes.minutes / 60 * cost.cost };
-
-        const reals = { reals: dollars.dollars * dollarVar.dollar };
-        //past week tasks
-        const [LastWeekTasks] = await connection('task').count('id as lastTasks').whereBetween('submit', [getSunday(14), getSaturday(7)]);
-        //past week minutes
-        const [lastWeekMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as lastMinutes')).whereBetween('submit', [getSunday(14), getSaturday(7)]);
-
-        return res.json([weekTasks, weekMinutes, dollars, reals, LastWeekTasks, lastWeekMinutes]);
+        const response = await tasksRepository.indexWeek([getSunday(7), getSaturday(14), getSunday(14), getSaturday(7)]);
+        return res.json(response);
 
       } catch (err) {
         return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
@@ -114,24 +96,9 @@ export = {
 
     async indexMonth(req: Request, res: Response) {
       try {
-        //current month tasks
-        const [monthTasks] = await connection('task').count('id as tasks').whereBetween('submit', [getFirstDay(0), getLastDay(0)]);
-        //current month minutes
-        const [monthMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as minutes')).whereBetween('submit', [getFirstDay(0), getLastDay(0)]);
+        const response = await tasksRepository.indexMonth([getFirstDay(0), getLastDay(0), getFirstDay(-1), getLastDay(-1)]);
 
-        const [cost] = await connection('settings').select('cost');
-
-        const [dollarVar] = await connection('settings').select('dollar');
-
-        const dollars = { dollars: monthMinutes.minutes / 60 * cost.cost };
-
-        const reals = { reals: dollars.dollars * dollarVar.dollar };
-        //past month tasks
-        const [lastMonthTasks] = await connection('task').count('id as lastTasks').whereBetween('submit', [getFirstDay(-1), getLastDay(-1)]);
-        //past month minutes
-        const [lastMonthMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as lastMinutes')).whereBetween('submit', [getFirstDay(-1), getLastDay(-1)]);
-
-        return res.json([monthTasks, monthMinutes, dollars, reals, lastMonthTasks, lastMonthMinutes]);
+        return res.json(response);
 
       } catch (err) {
         return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
@@ -143,19 +110,9 @@ export = {
       const from = String(interval.from);
       const to = getNextDay(String(interval.to));
       try {
-        const [intervalTasks] = await connection('task').count('id as tasks').whereBetween('submit', [from, to]);
+        const response = await tasksRepository.indexInterval(from, to);
 
-        const [intervalMinutes] = await connection('task').select(connection.raw('coalesce(sum(time), 0) as minutes')).whereBetween('submit', [from, to]);
-
-        const [cost] = await connection('settings').select('cost');
-
-        const [dollarVar] = await connection('settings').select('dollar');
-
-        const dollars = { dollars: intervalMinutes.minutes / 60 * cost.cost };
-
-        const reals = { reals: dollars.dollars * dollarVar.dollar };
-
-        return res.json([intervalTasks, intervalMinutes, dollars, reals]);
+        return res.json(response);
 
       } catch (err) {
         return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
