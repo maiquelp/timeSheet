@@ -42,7 +42,7 @@ const Home = () => {
         const data = { time }
 
         try {
-            await api.post('task', data);
+            await api.post('tasks', data);
             getLastTask();
             getWeekTasks();
             getMonthTasks();      
@@ -54,7 +54,7 @@ const Home = () => {
 
     const getLastTask = async () => {
         try {
-            const res = await api.get('lastTask');
+            const res = await api.get('tasks/last');
             const last = `${res.data[0].time} minutes in ${res.data[0].submit}`;
             setLastTask(last);
         } catch (err) {
@@ -65,7 +65,7 @@ const Home = () => {
     const undoTask = async (e) => {
       e.preventDefault();  
       try {
-          await api.delete('deleteTask');
+          await api.delete('tasks/delete');
           getLastTask();
           getWeekTasks();
           getMonthTasks();    
@@ -77,13 +77,13 @@ const Home = () => {
 
     const getWeekTasks = async () => {
       try {
-          const res = await api.get('week');
-          setWeekTasks(res.data[0].tasks);
-          setWeekMinutes(res.data[1].minutes);
-          setWeekDollars(parseFloat(res.data[2].dollars).toFixed(2));
-          setWeekReals(parseFloat(res.data[3].reals).toFixed(2));
-          setLastWeekTasks(res.data[4].lastTasks);
-          setLastWeekMinutes(res.data[5].lastMinutes);
+          const res = await api.get('tasks/week');
+          setWeekTasks(res.data.tasks);
+          setWeekMinutes(res.data.minutes);
+          setWeekDollars(parseFloat(res.data.dollars).toFixed(2));
+          setWeekReals(parseFloat(res.data.reals).toFixed(2));
+          setLastWeekTasks(res.data.lastTasks);
+          setLastWeekMinutes(res.data.lastMinutes);
       } catch (err) {
           alert(`Error on get the week results. \n Original Message:\n ${err}`);
       }
@@ -91,13 +91,13 @@ const Home = () => {
 
     const getMonthTasks = async () => {
       try {
-          const res = await api.get('month');
-          setMonthTasks(res.data[0].tasks);
-          setMonthMinutes(res.data[1].minutes);
-          setMonthDollars(parseFloat(res.data[2].dollars).toFixed(2));
-          setMonthReals(parseFloat(res.data[3].reals).toFixed(2));
-          setLastMonthTasks(res.data[4].lastTasks);
-          setLastMonthMinutes(res.data[5].lastMinutes);
+          const res = await api.get('tasks/month');
+          setMonthTasks(res.data.tasks);
+          setMonthMinutes(res.data.minutes);
+          setMonthDollars(parseFloat(res.data.dollars).toFixed(2));
+          setMonthReals(parseFloat(res.data.reals).toFixed(2));
+          setLastMonthTasks(res.data.lastTasks);
+          setLastMonthMinutes(res.data.lastMinutes);
       } catch (err) {
           alert(`Error on get the month results. \n Original Message:\n ${err}`);
       }
@@ -107,16 +107,16 @@ const Home = () => {
       e.preventDefault();  
 
       try {
-        const res = await api.get('interval', {
+        const res = await api.get('tasks/interval', {
             params: {
                 from : from,
                 to : to
             }
         });
-        setCustomTasks(res.data[0].tasks);
-        setCustomMinutes(res.data[1].minutes);
-        setCustomDollars(parseFloat(res.data[2].dollars).toFixed(2));
-        setCustomReals(parseFloat(res.data[3].reals).toFixed(2));
+        setCustomTasks(res.data.tasks);
+        setCustomMinutes(res.data.minutes);
+        setCustomDollars(parseFloat(res.data.dollars).toFixed(2));
+        setCustomReals(parseFloat(res.data.reals).toFixed(2));
       } catch (err) {
         alert(`Error on fetching data. \n Original Message:\n ${err}`);
       }
