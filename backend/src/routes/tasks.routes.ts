@@ -1,20 +1,78 @@
 import { Router } from 'express';
-import taskController from '../controllers/taskController';
+import TasksRepository from '../repositories/TasksRepository';
+import IndexIntervalService from '../services/IndexIntervalService';
+import IndexMonthService from '../services/IndexMonthService';
+import IndexWeekService from '../services/IndexWeekService';
 
+const tasksRepository = new TasksRepository();
 
 const tasksRouter = Router();
 
-tasksRouter.post('/', taskController.create);
+tasksRouter.post('/', async (req, res) => {
+  try {
+    const {time} = req.body;
+    tasksRepository.create({time});
+    return res.status(204).send();
 
-tasksRouter.get('/last', taskController.indexLast);
+  } catch (err) {
+      return res.status(400).send(`Registration failed. \n Original Message:\n ${err}`);
+  }
+});
 
-tasksRouter.delete('/delete', taskController.delete);
+tasksRouter.get('/last', async (req, res) => {
+  try {
+    const lastTask = await tasksRepository.indexLast();
+    return res.json(lastTask);
 
-tasksRouter.get('/week', taskController.indexWeek);
+  } catch (err) {
+    return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
+  }
+});
 
-tasksRouter.get('/month', taskController.indexMonth);
+tasksRouter.delete('/delete', async (req, res) => {
+  try {  
+    tasksRepository.delete();
+    return res.status(204).send();
+      
+  } catch (err) {
+    return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
+  }
+});
 
-tasksRouter.get('/interval', taskController.indexDateInterval);
+tasksRouter.get('/week', async (req, res) => {
+  try {
+    const indexWeek = new IndexWeekService(tasksRepository);
+    const response = await indexWeek.execute();
+    return res.json(response);
 
+  } catch (err) {
+    return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
+  }
+});
+
+tasksRouter.get('/month', async (req, res) => {
+  try {
+    const indexMonth = new IndexMonthService(tasksRepository);
+    const response = await indexMonth.execute();
+    return res.json(response);
+
+  } catch (err) {
+    return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
+  }
+});
+
+tasksRouter.get('/interval', async (req, res) => {
+  try {
+    const request = req.query;
+    const from = String(request.from);
+    const to = String(request.to);
+    const indexInterval = new IndexIntervalService(tasksRepository);
+    const response = await indexInterval.execute({from, to});
+    return res.json(response);
+
+  } catch (err) {
+    return res.status(400).send(`Request failed. \n Original Message:\n ${err}`);
+  }
+});
 
 export default tasksRouter;
